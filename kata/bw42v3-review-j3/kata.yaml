@@ -1,4 +1,4 @@
-description: "Big World 1942 v3, reviewed self-play game, Japanese round 3 to the round's end; Japan's third turn: fleet grouping and exposure"
+description: "Big World 1942 v3, reviewed self-play game, Japanese round 3 to the round's end; Japan's third turn: fleet grouping and exposure. Units more than 3 moves from any Japanese unit removed (Europe, Russia, most of the Allies)."
 start: {save: position.tsvg}
 seats: [Axis]
 limits: {rounds: 3, min_games: 10, max_games: 20, budget_minutes: 10}
