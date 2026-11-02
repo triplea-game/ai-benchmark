@@ -1,0 +1,4 @@
+description: WW2v3 1941 human game (forum, Low Luck, NOs) from Germany's round 3, played to round 5
+start: {map: WW2v3-1941.xml, human: position.jsonl@3@Germans}
+seats: [Axis, Allies]
+limits: {rounds: 5, min_games: 4, max_games: 20, budget_minutes: 15}

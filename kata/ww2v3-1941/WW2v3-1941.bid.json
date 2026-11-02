@@ -1,0 +1,26 @@
+{
+  "map": "WW2v3-1941.xml",
+  "pus": {},
+  "placements": [
+    {
+      "player": "Russians",
+      "territory": "Belorussia",
+      "unitType": "armour",
+      "count": 1
+    },
+    {
+      "player": "Russians",
+      "territory": "Eastern Ukraine",
+      "unitType": "armour",
+      "count": 1
+    },
+    {
+      "player": "British",
+      "territory": "Egypt",
+      "unitType": "infantry",
+      "count": 1
+    }
+  ],
+  "source": "forum saves: 35 of 41 all-human v3 1941 games reaching round 2 used a bid, all for the Allies; median 14 PUs (IQR 13-15), all 1.x era (2018-2020); this exact placement is the most common (4 games); old ladder: Allies 13 with Low Luck, 8 with dice (forum topic 78).",
+  "notes": "Allies 13 PUs, all spent. Human bids are Low Luck, no tech (34 of 35 bid games LL); with dice the ladder used 8. Total bid value 13 PUs (units 13 + PUs 0). Names validated against /home/dan/work/scratch/ai-maps/triplea/game-app/smoke-testing/src/test/resources/map-xmls/WW2v3-1941.xml."
+}

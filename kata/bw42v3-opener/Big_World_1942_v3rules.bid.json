@@ -1,0 +1,56 @@
+{
+  "map": "Big_World_1942_v3rules.xml",
+  "pus": {},
+  "placements": [
+    {
+      "player": "Russians",
+      "territory": "Moscow",
+      "unitType": "infantry",
+      "count": 1
+    },
+    {
+      "player": "Russians",
+      "territory": "Stalingrad",
+      "unitType": "infantry",
+      "count": 1
+    },
+    {
+      "player": "Russians",
+      "territory": "Northern Russia",
+      "unitType": "infantry",
+      "count": 1
+    },
+    {
+      "player": "Russians",
+      "territory": "Leningrad",
+      "unitType": "infantry",
+      "count": 1
+    },
+    {
+      "player": "Russians",
+      "territory": "Caucasus",
+      "unitType": "infantry",
+      "count": 1
+    },
+    {
+      "player": "Russians",
+      "territory": "Eastern Russia",
+      "unitType": "infantry",
+      "count": 1
+    },
+    {
+      "player": "Russians",
+      "territory": "Karelija",
+      "unitType": "infantry",
+      "count": 1
+    },
+    {
+      "player": "Chinese",
+      "territory": "Yunnan",
+      "unitType": "infantry",
+      "count": 1
+    }
+  ],
+  "source": "AI calibration starting point (no human bid data)",
+  "notes": "No human Big World game in the corpus used a bid (0 of 22 all-human games reaching round 2; forum calls the map reasonably balanced). This is the starting rung of an AI-vs-AI calibration ladder (0/12/24/36 PUs, 3 PUs = 1 infantry per frontline territory, Russia first), not a human bid. Standard = 24 PUs until calibration says otherwise. Total bid value 24 PUs (units 24 + PUs 0). Names validated against /home/dan/work/scratch/triplea-legacy/maps/big_world/big_world-master/map/games/Big_World_1942_v3rules.xml."
+}

@@ -1,0 +1,20 @@
+{
+  "map": "WW2v3-1942.xml",
+  "pus": {},
+  "placements": [
+    {
+      "player": "Russians",
+      "territory": "Caucasus",
+      "unitType": "infantry",
+      "count": 2
+    },
+    {
+      "player": "Russians",
+      "territory": "Karelia S.S.R.",
+      "unitType": "armour",
+      "count": 1
+    }
+  ],
+  "source": "forum saves: 6 of 17 all-human v3 1942 games reaching round 2 used a bid (5 of 7 in 2.x era), all Allies, mostly Russians; median 11 (range 7-17); this placement in 2 games (2021-2025); old ladder: Allies 9 (forum topic 78). Thin sample.",
+  "notes": "Allies 11 PUs, all spent. Low confidence: few games; 13 of 17 games dice, 16 of 17 tech on. Total bid value 11 PUs (units 11 + PUs 0). Names validated against /home/dan/work/scratch/ai-maps/triplea/game-app/smoke-testing/src/test/resources/map-xmls/WW2v3-1942.xml."
+}

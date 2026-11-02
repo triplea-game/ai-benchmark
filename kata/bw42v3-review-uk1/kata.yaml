@@ -1,0 +1,5 @@
+description: "Big World 1942 v3, reviewed self-play game, British round 1 to the round's end; the UK opening: the France trade and the sz17 transport"
+start: {save: position.tsvg}
+seats: [Allies]
+limits: {rounds: 1, min_games: 10, max_games: 20, budget_minutes: 10}
+detail: true
