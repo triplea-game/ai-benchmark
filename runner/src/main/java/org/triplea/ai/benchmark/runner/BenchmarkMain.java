@@ -339,8 +339,9 @@ public final class BenchmarkMain {
     if (build == null) {
       source.put("build", null);
       source.put("git_sha", git("rev-parse", "HEAD"));
+      source.put("git_describe", git("describe", "--tags", "--always"));
       source.put("git_dirty", !git("status", "--porcelain", "--untracked-files=no").isEmpty());
-      return source;
+      return withBenchmarkTree(source);
     }
     // The source tree may have moved on since the freeze; the build knows what it was made from.
     final Properties frozen = new Properties();
@@ -349,7 +350,16 @@ public final class BenchmarkMain {
     }
     source.put("build", Path.of(build).getFileName().toString());
     source.put("git_sha", frozen.getProperty("git_sha", "unknown"));
+    source.put("git_describe", frozen.getProperty("git_describe", "unknown"));
     source.put("git_dirty", Boolean.parseBoolean(frozen.getProperty("git_dirty", "true")));
+    return withBenchmarkTree(source);
+  }
+
+  /** Kata are read live from this repo, so its commit is part of what was tested. */
+  private static Map<String, Object> withBenchmarkTree(final Map<String, Object> source) {
+    source.put("benchmark_sha", gitIn(".", "rev-parse", "HEAD"));
+    source.put(
+        "benchmark_dirty", !gitIn(".", "status", "--porcelain", "--untracked-files=no").isEmpty());
     return source;
   }
 
@@ -383,9 +393,13 @@ public final class BenchmarkMain {
     return Math.round(nanos / 1e8) / 10.0;
   }
 
+  // The AI under test lives in the sibling triplea clone, so its commit is the one recorded.
   private static String git(final String... args) {
-    // The AI under test lives in the sibling triplea clone, so its commit is the one recorded.
-    final List<String> command = new ArrayList<>(List.of("git", "-C", "../triplea"));
+    return gitIn("../triplea", args);
+  }
+
+  private static String gitIn(final String repo, final String... args) {
+    final List<String> command = new ArrayList<>(List.of("git", "-C", repo));
     command.addAll(List.of(args));
     try {
       final Process process = new ProcessBuilder(command).redirectErrorStream(true).start();

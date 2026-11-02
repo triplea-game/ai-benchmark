@@ -27,7 +27,7 @@ run:
 # Freeze the runner and engine as built now, to play later with build=<name> (default: the commit)
 freeze name=`git -C ../triplea rev-parse --short HEAD`:
     @{{gradlew}} -q :runner:freeze "-PbuildName={{name}}"
-    @printf 'git_sha=%s\ngit_dirty=%s\n' "$(git -C ../triplea rev-parse HEAD)" "$([ -z "$(git -C ../triplea status --porcelain --untracked-files=no)" ] && echo false || echo true)" > "{{builds / name}}/build.properties"
+    @printf 'git_sha=%s\ngit_describe=%s\ngit_dirty=%s\n' "$(git -C ../triplea rev-parse HEAD)" "$(git -C ../triplea describe --tags --always)" "$([ -z "$(git -C ../triplea status --porcelain --untracked-files=no)" ] && echo false || echo true)" > "{{builds / name}}/build.properties"
     @echo "FROZEN {{builds / name}}"
 
 # List the kata found and their limits
@@ -37,6 +37,12 @@ list:
 # Compare run folders' raw data; each run after the first is shown as a difference from it
 tabulate +dirs:
     @{{gradlew}} -q :analysis:tabulate "-PrunDirs=$(realpath {{dirs}} | paste -sd,)"
+
+# Copy a run from build/ into results/baselines/<name>, without logs; refuses a dirty run
+keep run name:
+    @if grep -Eq '"(git|benchmark)_dirty": true' "{{run}}/run.json"; then echo "dirty run, not kept" >&2; exit 1; fi
+    @mkdir -p "results/baselines/{{name}}"
+    @for f in run.json games.jsonl snapshots.jsonl scorecard.json steps.jsonl; do [ ! -f "{{run}}/$f" ] || cp "{{run}}/$f" "results/baselines/{{name}}/"; done
 
 # Open a kata's start file (map XML or save) in the TripleA client
 open name:

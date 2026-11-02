@@ -185,8 +185,9 @@ Current metrics:
 
 The runner never analyses; the tabulator reads only these files.
 
-- `run.json`: `schema`, `ai`, `build` (frozen build name, or null), `git_sha`, `git_dirty`, `workers`, `baseline` (or null), `java`,
-  `cpus`, `started_at`, `ended_at`, and `kata`: each descriptor as resolved.
+- `run.json`: `schema`, `ai`, `build` (frozen build name, or null), `git_sha`, `git_describe`, `git_dirty` (the triplea
+  commit under test), `benchmark_sha`, `benchmark_dirty` (this repo, which holds the kata), `workers`,
+  `baseline` (or null), `java`, `cpus`, `started_at`, `ended_at`, and `kata`: each descriptor as resolved.
 - `games.jsonl`, one per game: `kata`, `seat`, `pair`, `game` (id), `ai`, `reference_ai`, `seed` (null for
   now), `status` (`ok`, `timeout`, `crash`), `winner` (alliances joined by
   `+`, or null), `winners` (players), `rounds`, `capped`, `stopped` (ended by `stop_after`),
@@ -200,6 +201,12 @@ The runner never analyses; the tabulator reads only these files.
   the final state: `kata`, `seat`, `pair`, `game`, `round`, `player`
   (whose turn ended; null on the last record), `turn_index`, `last`, and
   `metrics`: `{<id>: {seat, enemy, gap}}`.
+
+## Keeping results
+
+`just keep <run> <name>` copies a clean run, minus `logs/`, to `results/baselines/<name>/`; commit
+those and pass one as `baseline=`. `results/experiments/` is ignored scratch space. Push a baseline
+only when its `git_sha` is on a triplea remote.
 
 ## Scorecard
 
