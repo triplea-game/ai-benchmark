@@ -1,4 +1,4 @@
-description: "Big World 1942 v3, reviewed self-play game, Americans round 1 to the round's end; the US opening: fleet and transport exposure"
+description: "Big World 1942 v3, reviewed self-play game, Americans round 1 to the round's end; the US opening: fleet and transport exposure. Units more than 5 moves from the US Pacific fleet and home territories removed (Europe, Russia)."
 start: {save: position.tsvg}
 seats: [Allies]
 limits: {rounds: 1, min_games: 10, max_games: 20, budget_minutes: 10}
