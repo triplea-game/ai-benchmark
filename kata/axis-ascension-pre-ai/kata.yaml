@@ -1,0 +1,4 @@
+description: Forum 4457 post 81082 - Allies Hard AI, British round 1 before combat move (lone transport into Borneo, undefended transports)
+start: {save: position.tsvg}
+seats: [Allies]
+limits: {rounds: 3, stop_after: The_British_Empire, min_games: 10, max_games: 10}
