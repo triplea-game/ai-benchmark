@@ -121,11 +121,7 @@ public final class BenchmarkMain {
   private static void playWorker(final KataCatalog catalog, final Map<String, String> opts)
       throws IOException {
     final String name = require(opts, "play");
-    final Kata kata =
-        catalog.all().stream()
-            .filter(k -> k.name().equals(name))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No kata named " + name));
+    final Kata kata = catalog.named(name);
     final Path partDir = Path.of(require(opts, "part-dir"));
     HeadlessEngine.bootstrap();
     try (JsonlWriter snapshots = new JsonlWriter(partDir.resolve("snapshots.jsonl"));

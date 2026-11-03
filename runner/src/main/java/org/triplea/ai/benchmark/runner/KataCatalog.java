@@ -26,6 +26,25 @@ final class KataCatalog {
     return folders().map(parser::parse).toList();
   }
 
+  /**
+   * The kata called {@code name}. Parses the folder of that name alone, so a broken descriptor
+   * elsewhere does not fail the caller; only a kata whose {@code name} key differs from its folder
+   * name costs a scan of all of them.
+   */
+  Kata named(final String name) {
+    final Path folder = root.resolve(name);
+    if (Files.isRegularFile(folder.resolve(KataParser.DESCRIPTOR))) {
+      final Kata kata = parser.parse(folder);
+      if (kata.name().equals(name)) {
+        return kata;
+      }
+    }
+    return all().stream()
+        .filter(k -> k.name().equals(name))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No kata named " + name));
+  }
+
   List<Kata> matching(final String glob) {
     final var matcher = FileSystems.getDefault().getPathMatcher("glob:" + glob);
     return folders()
