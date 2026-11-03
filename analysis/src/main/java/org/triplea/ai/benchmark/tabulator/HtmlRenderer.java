@@ -101,6 +101,12 @@ final class HtmlRenderer {
             + " seat / enemy means below it. Diff rows are against run 1; * marks a difference"
             + " whose CI excludes 0, and @tN the first turn index where it does. Record is games,"
             + " then wins-losses-capped; score counts a win 1, a loss 0 and anything else ½.</div>");
+    card.warnings()
+        .forEach(
+            w ->
+                out.append("<div class=\"muted\"><b>Warning:</b> ")
+                    .append(esc(w))
+                    .append("</div>"));
     card.series().forEach(box -> out.append(box(box)));
     out.append("<div id=\"tip\"></div><script>")
         .append(SCRIPT)

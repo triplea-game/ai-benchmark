@@ -9,9 +9,10 @@ import org.triplea.ai.benchmark.tabulator.Stats.Summary;
 /**
  * The comparison of one or more runs, laid out like a baseball scoreboard: each kata seat is a game
  * ("box score"), each metric an inning, each run a team. The first run is the reference the others
- * are measured against.
+ * are measured against. {@code warnings} name differences between the runs that make a comparison
+ * unfair, eg a kata played to different round caps.
  */
-record Scorecard(int schema, List<RunInfo> runs, List<Box> series) {
+record Scorecard(int schema, List<RunInfo> runs, List<String> warnings, List<Box> series) {
 
   /** Where a run came from. */
   record RunInfo(String dir, String ai, String gitSha, String startedAt) {

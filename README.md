@@ -230,6 +230,8 @@ Student-t CI; each run after the first gets a diff row, that run minus the
 first, with a Welch CI. One run is written into its own folder; several into a
 new `compare-<timestamp>` folder beside the first.
 Only `ok` games count; crashes and timeouts show in the record column.
+A `WARNING` line (and an HTML note) appears when runs played a kata to different round caps (eg
+`thorough=true` against not), since their results aren't comparable.
 The signal is the metric gaps, not who won: a variant that ends every round 10 TUV further ahead,
 equal elsewhere, is better whether or not the game is decided. A diff cell's `@tN` is the first
 turn index where that metric's mean gap already differs from run 1's with a CI excluding 0: how
@@ -241,3 +243,9 @@ games that end early drop out of later turns.
 Runs written when the runner still played a control AI also hold `arm`
 (`control` or `experimental`) on each record; the tabulator uses only the
 `experimental` games, so those folders still compare.
+
+## Develop
+
+`./gradlew -Ptriplea=../triplea check` runs the tests and PMD (using triplea's `.build/pmd.xml`).
+`spotlessApply` needs `--no-configuration-cache`; with the cache on, it formats but then fails
+on `failedTestsService`.

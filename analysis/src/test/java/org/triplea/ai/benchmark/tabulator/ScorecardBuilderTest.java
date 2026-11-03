@@ -173,6 +173,40 @@ class ScorecardBuilderTest {
     assertThat(team.separatesAt()).containsEntry("tuv", 1);
   }
 
+  @Test
+  void warnsWhenRunsPlayedAKataToDifferentRoundCaps() {
+    final RunData eight = runWithRounds(8);
+    final RunData thirty = runWithRounds(30);
+
+    assertThat(new ScorecardBuilder(List.of(eight, thirty)).build().warnings())
+        .singleElement()
+        .asString()
+        .contains("kata k", "run [1] 8", "run [2] 30");
+  }
+
+  @Test
+  void doesNotWarnWhenRoundCapsMatch() {
+    assertThat(new ScorecardBuilder(List.of(runWithRounds(8), runWithRounds(8))).build().warnings())
+        .isEmpty();
+  }
+
+  private static RunData runWithRounds(final int rounds) {
+    return new RunData(
+        "dir",
+        json(
+            String.format(
+                """
+                {"schema": 1, "ai": "Hard", "git_sha": "abcdef1234", "started_at": "t0",
+                 "kata": [{"name": "k", "seats": ["Axis"], "reference_ai": "Hard",
+                           "limits": {"rounds": %d},
+                           "primary_metric": "tuv", "metrics": ["tuv"]}]}
+                """,
+                rounds)),
+        List.of(),
+        List.of(),
+        List.of());
+  }
+
   private static RunData run(
       final String ai, final List<JsonObject> games, final List<JsonObject> snapshots) {
     return new RunData(

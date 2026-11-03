@@ -28,6 +28,7 @@ final class TerminalRenderer {
       final Scorecard.RunInfo run = card.runs().get(i);
       out.append(String.format("  run %d: %s, started %s%n", i + 1, run.label(), run.startedAt()));
     }
+    card.warnings().forEach(w -> out.append("  WARNING: ").append(w).append('\n'));
     for (final Box box : card.series()) {
       out.append('\n').append(box(box));
     }

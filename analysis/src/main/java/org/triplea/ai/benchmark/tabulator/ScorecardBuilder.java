@@ -48,7 +48,44 @@ final class ScorecardBuilder {
     final List<Box> series = new ArrayList<>();
     katas.forEach((name, kata) -> seats.get(name).forEach(seat -> series.add(box(kata, seat))));
     return new Scorecard(
-        RunData.SCHEMA, runs.stream().map(RunData::runInfo).toList(), List.copyOf(series));
+        RunData.SCHEMA,
+        runs.stream().map(RunData::runInfo).toList(),
+        roundCapWarnings(katas.keySet()),
+        List.copyOf(series));
+  }
+
+  /** A kata played to different round caps in different runs (eg thorough versus not). */
+  private List<String> roundCapWarnings(final Iterable<String> kataNames) {
+    final List<String> warnings = new ArrayList<>();
+    for (final String name : kataNames) {
+      final Map<Integer, List<Integer>> runsByCap = new TreeMap<>();
+      for (int i = 0; i < runs.size(); i++) {
+        final Optional<Integer> cap = roundCap(runs.get(i), name);
+        if (cap.isPresent()) {
+          runsByCap.computeIfAbsent(cap.get(), k -> new ArrayList<>()).add(i + 1);
+        }
+      }
+      if (runsByCap.size() > 1) {
+        final List<String> parts = new ArrayList<>();
+        runsByCap.forEach((cap, ids) -> parts.add("run " + ids + " " + cap));
+        warnings.add(
+            "kata "
+                + name
+                + " was played to different round caps ("
+                + String.join(", ", parts)
+                + "); results are not comparable");
+      }
+    }
+    return List.copyOf(warnings);
+  }
+
+  private static Optional<Integer> roundCap(final RunData run, final String kataName) {
+    return run.kata().stream()
+        .filter(k -> k.get("name").getAsString().equals(kataName))
+        .map(k -> k.getAsJsonObject("limits"))
+        .filter(limits -> limits != null && limits.has("rounds"))
+        .map(limits -> limits.get("rounds").getAsInt())
+        .findFirst();
   }
 
   private Box box(final JsonObject kata, final String seat) {
