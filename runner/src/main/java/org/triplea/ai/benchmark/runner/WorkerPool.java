@@ -23,9 +23,11 @@ import javax.annotation.Nullable;
  * ProAI's battle calculator is static. Each worker writes to its own part folder and the pool, the
  * only writer of the run's raw data files, appends a part once its worker exits.
  *
- * <p>Pairs start in kata order. A kata's budget stops new pairs, but a started pair is finished, so
- * every seat gets the same number of games. With a baseline run, {@link EarlyStop} can also stop
- * new pairs once the kata clearly differs from it.
+ * <p>Kata take turns: the next pair goes to the kata furthest from its {@code min_games}, so each
+ * reaches it before any plays more, up to {@code max_games}. The run's deadline stops new pairs,
+ * and so, near it, does a kata's average game taking longer than the time left; a started pair is
+ * finished, so every seat gets the same number of games. With a baseline run, {@link EarlyStop} can
+ * also stop a kata's new pairs once it clearly differs from it.
  */
 final class WorkerPool {
   /** Left free for the OS and whatever else the box runs when sizing the pool. */
@@ -41,7 +43,11 @@ final class WorkerPool {
   private final List<KataQueue> queues;
   private final Writers writers;
   @Nullable private final EarlyStop earlyStop;
+  @Nullable private final Duration deadline;
+  private final boolean thorough;
   private final Map<Process, Running> running = new ConcurrentHashMap<>();
+  private long deadlineAt;
+  private boolean deadlineReported;
 
   WorkerPool(
       final Path kataDir,
@@ -50,7 +56,9 @@ final class WorkerPool {
       final int workers,
       final List<Kata> katas,
       final Writers writers,
-      @Nullable final EarlyStop earlyStop) {
+      @Nullable final EarlyStop earlyStop,
+      @Nullable final Duration deadline,
+      final boolean thorough) {
     this.kataDir = kataDir;
     this.runDir = runDir;
     this.ai = ai;
@@ -58,6 +66,8 @@ final class WorkerPool {
     this.queues = katas.stream().map(KataQueue::new).toList();
     this.writers = writers;
     this.earlyStop = earlyStop;
+    this.deadline = deadline;
+    this.thorough = thorough;
   }
 
   /** The raw data files every worker's part is appended to. */
@@ -78,6 +88,7 @@ final class WorkerPool {
   void run() throws InterruptedException {
     final Thread killWorkers = new Thread(() -> running.keySet().forEach(Process::destroyForcibly));
     Runtime.getRuntime().addShutdownHook(killWorkers);
+    deadlineAt = deadline == null ? Long.MAX_VALUE : System.nanoTime() + deadline.toNanos();
     while (true) {
       while (running.size() < workers) {
         final Optional<Job> job = nextJob();
@@ -92,6 +103,13 @@ final class WorkerPool {
       finish(awaitAnyExit());
     }
     Runtime.getRuntime().removeShutdownHook(killWorkers);
+    for (final KataQueue queue : queues) {
+      if (queue.nextPair < queue.kata.limits().minGames()) {
+        System.out.printf(
+            "SHORT %s played %d pair(s), min_games is %d%n",
+            queue.kata.name(), queue.nextPair, queue.kata.limits().minGames());
+      }
+    }
     try {
       Files.deleteIfExists(runDir.resolve("parts"));
     } catch (final DirectoryNotEmptyException e) {
@@ -101,8 +119,34 @@ final class WorkerPool {
     }
   }
 
+  /**
+   * A started pair's next seat, else a new pair for the kata furthest from its {@code min_games}
+   * (then from its {@code max_games}), skipping a kata whose games look longer than the time left.
+   */
   private Optional<Job> nextJob() {
-    return queues.stream().map(KataQueue::next).flatMap(Optional::stream).findFirst();
+    final Optional<KataQueue> started =
+        queues.stream().filter(q -> !q.pending.isEmpty()).findFirst();
+    if (started.isPresent()) {
+      return Optional.of(started.get().pending.poll());
+    }
+    if (queues.stream().noneMatch(KataQueue::canStartPair)) {
+      return Optional.empty();
+    }
+    final long left = deadlineAt - System.nanoTime();
+    if (left < 0) {
+      if (!deadlineReported) {
+        deadlineReported = true;
+        System.out.printf(
+            "DEADLINE %d min reached: no new pairs, %d game(s) still running%n",
+            deadline.toMinutes(), running.size());
+      }
+      return Optional.empty();
+    }
+    return queues.stream()
+        .filter(KataQueue::canStartPair)
+        .filter(q -> fits(q, left))
+        .min(Comparator.comparingDouble(KataQueue::progress))
+        .map(q -> q.startPair().pending.poll());
   }
 
   private void launch(final Job job) {
@@ -128,7 +172,9 @@ final class WorkerPool {
             "--run-dir",
             runDir.toString(),
             "--part-dir",
-            partDir.toString()));
+            partDir.toString(),
+            "--thorough",
+            String.valueOf(thorough)));
     try {
       Files.createDirectories(partDir);
       final Process process =
@@ -136,7 +182,7 @@ final class WorkerPool {
               .redirectErrorStream(true)
               .redirectOutput(partDir.resolve("worker.log").toFile())
               .start();
-      running.put(process, new Running(job, partDir));
+      running.put(process, new Running(job, partDir, System.nanoTime()));
     } catch (final IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -173,6 +219,9 @@ final class WorkerPool {
       record = JsonlWriter.parse(gameLines.get(0));
     }
     BenchmarkMain.printGame(record);
+    if ("ok".equals(record.get("status")) && record.get("wall_seconds") instanceof Number wall) {
+      queue(job.kata()).observeGame(wall.doubleValue());
+    }
     if ("ok".equals(record.get("status")) && earlyStop != null) {
       checkEarlyStop(job, snapshotLines);
     }
@@ -188,8 +237,7 @@ final class WorkerPool {
         .map(JsonlWriter::parse)
         .filter(s -> Boolean.TRUE.equals(s.get("last")))
         .forEach(s -> earlyStop.observe(job.kata().name(), job.seat(), s));
-    final KataQueue queue =
-        queues.stream().filter(q -> q.kata == job.kata()).findFirst().orElseThrow();
+    final KataQueue queue = queue(job.kata());
     if (!queue.stopped) {
       earlyStop
           .decided(job.kata())
@@ -201,6 +249,35 @@ final class WorkerPool {
                     job.kata().name(), queue.nextPair, reason);
               });
     }
+  }
+
+  /**
+   * Whether a new game of the kata is likely to end within {@code nanos}: its finished games'
+   * average, or failing that how long its oldest running game has run so far, must fit.
+   */
+  private boolean fits(final KataQueue queue, final long nanos) {
+    final long now = System.nanoTime();
+    final double runningSeconds =
+        running.values().stream()
+            .filter(r -> r.job().kata() == queue.kata)
+            .mapToDouble(r -> (now - r.startedAt()) / 1e9)
+            .max()
+            .orElse(0);
+    final double expected = Math.max(queue.meanWallSeconds(), runningSeconds);
+    if (expected * 1e9 <= nanos) {
+      return true;
+    }
+    if (!queue.tooLongReported) {
+      queue.tooLongReported = true;
+      System.out.printf(
+          "SKIP %s: its games take %.0fs or more, longer than the %.0fs left%n",
+          queue.kata.name(), expected, nanos / 1e9);
+    }
+    return false;
+  }
+
+  private KataQueue queue(final Kata kata) {
+    return queues.stream().filter(q -> q.kata == kata).findFirst().orElseThrow();
   }
 
   private static List<String> lines(final Path file) {
@@ -244,42 +321,50 @@ final class WorkerPool {
     }
   }
 
-  private record Running(Job job, Path partDir) {}
+  private record Running(Job job, Path partDir, long startedAt) {}
 
-  /** A kata's games in pair order; its budget clock starts when its first pair does. */
+  /** A kata's games in pair order. */
   private static final class KataQueue {
     private final Kata kata;
     private final Deque<Job> pending = new ArrayDeque<>();
     private int nextPair;
-    private long budgetEnd;
-    private boolean started;
-    private boolean budgetReported;
     private boolean stopped;
+    private boolean tooLongReported;
+    private int gamesSeen;
+    private double wallSecondsSeen;
 
     KataQueue(final Kata kata) {
       this.kata = kata;
     }
 
-    Optional<Job> next() {
-      if (pending.isEmpty() && !stopped && nextPair < kata.limits().maxGames()) {
-        if (!started) {
-          started = true;
-          budgetEnd =
-              System.nanoTime() + Duration.ofMinutes(kata.limits().budgetMinutes()).toNanos();
-        }
-        if (System.nanoTime() <= budgetEnd) {
-          for (final String seat : kata.seats()) {
-            pending.add(new Job(kata, seat, nextPair));
-          }
-          nextPair++;
-        } else if (!budgetReported) {
-          budgetReported = true;
-          System.out.printf(
-              "BUDGET %s stopped after %d pair(s), min_games is %d%n",
-              kata.name(), nextPair, kata.limits().minGames());
-        }
+    boolean canStartPair() {
+      return !stopped && nextPair < kata.limits().maxGames();
+    }
+
+    /** Below 1 while short of min_games, then 1 plus the share of max_games played. */
+    double progress() {
+      final Kata.Limits limits = kata.limits();
+      return nextPair < limits.minGames()
+          ? (double) nextPair / limits.minGames()
+          : 1 + (double) nextPair / limits.maxGames();
+    }
+
+    void observeGame(final double wallSeconds) {
+      gamesSeen++;
+      wallSecondsSeen += wallSeconds;
+    }
+
+    /** Mean wall time of its finished games; 0 before any. */
+    double meanWallSeconds() {
+      return gamesSeen == 0 ? 0 : wallSecondsSeen / gamesSeen;
+    }
+
+    KataQueue startPair() {
+      for (final String seat : kata.seats()) {
+        pending.add(new Job(kata, seat, nextPair));
       }
-      return Optional.ofNullable(pending.poll());
+      nextPair++;
+      return this;
     }
   }
 }

@@ -49,14 +49,15 @@ public record Kata(
   }
 
   /**
-   * Run limits; game counts are per seat. {@code stopAfter} names a player: the game ends when that
+   * Run limits; game counts are per seat. {@code rounds} is the cap this run plays: a thorough run
+   * plays {@code thoroughRounds}. {@code stopAfter} names a player: the game ends when that
    * player's first turn ends.
    */
   public record Limits(
       int rounds,
+      int thoroughRounds,
       int minGames,
       int maxGames,
-      int budgetMinutes,
       int gameTimeoutMinutes,
       @Nullable String stopAfter) {}
 
@@ -75,9 +76,9 @@ public record Kata(
     json.put("reference_ai", referenceAi);
     final Map<String, Object> limitsJson = new LinkedHashMap<>();
     limitsJson.put("rounds", limits.rounds());
+    limitsJson.put("thorough_rounds", limits.thoroughRounds());
     limitsJson.put("min_games", limits.minGames());
     limitsJson.put("max_games", limits.maxGames());
-    limitsJson.put("budget_minutes", limits.budgetMinutes());
     limitsJson.put("game_timeout_minutes", limits.gameTimeoutMinutes());
     limitsJson.put("stop_after", limits.stopAfter());
     json.put("limits", limitsJson);

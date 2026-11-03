@@ -1,7 +1,8 @@
 # AI benchmark
 
-Needs `triplea-game/triplea` cloned next to this repo (`../triplea`); the build pulls the engine
-and AI from it as a Gradle composite build, and run records name that clone's commit.
+Needs `triplea-game/triplea` cloned next to this repo (`../triplea`, or another clone named with
+`triplea=<dir>`); the build pulls the engine and AI from it as a Gradle composite build, and run
+records name that clone's commit.
 
 Plays a TripleA AI over a set of scenarios ("kata"), seat by seat, and
 records game state at the end of every player turn. Comparing runs is the
@@ -19,9 +20,12 @@ just run                          # Hard Beta on every kata
 just ai=Hard kata='big_*' run     # another AI, a kata glob
 just kata=_pipeline run           # the pipeline check on a tiny map
 just workers=8 run                # 8 games at once (default: half the cores, capped by free memory)
+just minutes=60 run               # no new pair after 60 min (default 20; 0: none)
+just thorough=true minutes=120 run  # play each kata's thorough_rounds instead of rounds
 just baseline=<run dir> run       # stop each kata early once it clearly differs from a stored run
 just freeze [name]                # freeze the runner and engine as built now (default name: the commit)
 just build=<name> run             # play a frozen build while the source tree changes
+just triplea=<dir> freeze [name]  # freeze from another triplea clone, eg a commit checked out apart
 just list                         # kata found and their limits
 just tabulate <run dir>...        # compare runs from raw data; others are diffs from the first
 ```
@@ -39,9 +43,15 @@ folder live, and its runs record the commit it was frozen from (`build`, `git_sh
 ## How a kata is played
 
 For each seat (an alliance), the AI under test plays the seat and
-`reference_ai` plays everyone else. Games go in pairs, one per seat, so the
-budget cuts all seats evenly; a started pair is always finished. Each game runs
-in its own JVM, several at once; a game whose worker fails keeps its log under
+`reference_ai` plays everyone else. Games go in pairs, one per seat. Kata take
+turns: the next pair goes to the kata furthest from its `min_games`, so each reaches it before any
+plays more, up to `max_games`. No pair starts after the run's deadline (`minutes`), nor one whose
+kata's games look longer than the time left (`SKIP`: its finished games' average, or how long its
+oldest running game has run). A started pair is always finished, so a run ends a little past the
+deadline. A kata that didn't reach `min_games` prints `SHORT`. The CPU, not the worker count,
+bounds a run: each game's battle calculator already uses several cores.
+
+Each game runs in its own JVM, several at once; a game whose worker fails keeps its log under
 `parts/` in the run folder. Runs are compared in the same seat only; maps
 aren't balanced, so swapping sides isn't comparable.
 
@@ -61,9 +71,9 @@ seats: [Axis, Allies]       # alliances; each is benchmarked separately
 reference_ai: Hard          # default Hard
 limits:
   rounds: 10                # round cap per game (required)
+  thorough_rounds: 30       # default rounds; the cap for thorough=true
   min_games: 2              # default 2; per seat
   max_games: 20             # default 20
-  budget_minutes: 20        # default 20; no new pair starts after this
   game_timeout_minutes: 30  # default 30
 primary_metric: tuv         # default tuv
 metrics: [tuv, income]      # default: all registered
@@ -187,7 +197,7 @@ The runner never analyses; the tabulator reads only these files.
 
 - `run.json`: `schema`, `ai`, `build` (frozen build name, or null), `git_sha`, `git_describe`, `git_dirty` (the triplea
   commit under test), `benchmark_sha`, `benchmark_dirty` (this repo, which holds the kata), `workers`,
-  `baseline` (or null), `java`, `cpus`, `started_at`, `ended_at`, and `kata`: each descriptor as resolved.
+  `minutes` (the deadline, 0 for none), `thorough`, `baseline` (or null), `java`, `cpus`, `started_at`, `ended_at`, and `kata`: each descriptor as resolved.
 - `games.jsonl`, one per game: `kata`, `seat`, `pair`, `game` (id), `ai`, `reference_ai`, `seed` (null for
   now), `status` (`ok`, `timeout`, `crash`), `winner` (alliances joined by
   `+`, or null), `winners` (players), `rounds`, `capped`, `stopped` (ended by `stop_after`),

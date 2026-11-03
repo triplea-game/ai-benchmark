@@ -42,19 +42,27 @@ public final class KataParser {
   private static final Set<String> LIMIT_KEYS =
       Set.of(
           "rounds",
+          "thorough_rounds",
           "min_games",
           "max_games",
-          "budget_minutes",
           "game_timeout_minutes",
           "stop_after");
 
   private final Collection<String> knownAis;
   private final List<String> knownMetrics;
+  private final boolean thorough;
 
   /** {@code knownMetrics} is in registry order, which is the default metric order. */
   public KataParser(final Collection<String> knownAis, final List<String> knownMetrics) {
+    this(knownAis, knownMetrics, false);
+  }
+
+  /** A thorough parser resolves each kata's round cap to its {@code thorough_rounds}. */
+  public KataParser(
+      final Collection<String> knownAis, final List<String> knownMetrics, final boolean thorough) {
     this.knownAis = knownAis;
     this.knownMetrics = knownMetrics;
+    this.thorough = thorough;
   }
 
   public Kata parse(final Path kataDir) {
@@ -74,12 +82,18 @@ public final class KataParser {
     requireKnownKeys(root, TOP_KEYS, "top level");
     final Map<String, Object> limits = asMap(require(root, "limits"), "limits");
     requireKnownKeys(limits, LIMIT_KEYS, "limits");
+    final int rounds = positiveInt(require(limits, "rounds"), "limits.rounds");
+    final int thoroughRounds =
+        positiveInt(limits.getOrDefault("thorough_rounds", rounds), "limits.thorough_rounds");
+    if (thoroughRounds < rounds) {
+      throw new IllegalArgumentException("limits.thorough_rounds is below limits.rounds");
+    }
     final Kata.Limits parsedLimits =
         new Kata.Limits(
-            positiveInt(require(limits, "rounds"), "limits.rounds"),
+            thorough ? thoroughRounds : rounds,
+            thoroughRounds,
             positiveInt(limits.getOrDefault("min_games", 2), "limits.min_games"),
             positiveInt(limits.getOrDefault("max_games", 20), "limits.max_games"),
-            positiveInt(limits.getOrDefault("budget_minutes", 20), "limits.budget_minutes"),
             positiveInt(
                 limits.getOrDefault("game_timeout_minutes", 30), "limits.game_timeout_minutes"),
             limits.containsKey("stop_after")

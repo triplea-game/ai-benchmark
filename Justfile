@@ -5,12 +5,19 @@ ai := "Hard Beta"
 kata := "*"
 # Parallel games, one JVM each; 0 sizes the pool from cores and free memory
 workers := "0"
+# No new pair starts after this many minutes (0: none); started pairs finish
+minutes := "20"
+# true plays each kata's thorough_rounds instead of rounds
+thorough := "false"
+# The triplea clone to build and freeze from
+triplea := "../triplea"
 # A stored run folder; a kata stops early once it clearly differs from that run
 baseline := ""
 # A frozen build (see freeze) to play instead of the current source
 build := ""
 heap := "2g"
 gradlew := justfile_directory() / "gradlew"
+gradle := gradlew + " -q '-Ptriplea=" + triplea + "'"
 out := clean(justfile_directory() / "build")
 builds := out / "builds"
 baseline_arg := if baseline == "" { "" } else { canonicalize(baseline) }
@@ -21,22 +28,22 @@ help:
 
 # Play {{ai}} on the kata matching {{kata}}, then print the scorecard; "*" skips "_" kata
 run:
-    @{{ if build == "" { gradlew + " -q :runner:runBenchmark '-Pai=" + ai + "' '-Pkata=" + kata + "' -Pworkers=" + workers + " -Pheap=" + heap + " '-Pbaseline=" + baseline_arg + "'" } else { "java -Xmx" + heap + " -Dai.benchmark.build=" + builds / build + " -cp '" + builds / build / "lib/*' org.triplea.ai.benchmark.runner.BenchmarkMain --kata-dir " + justfile_directory() / "kata" + " --out " + out + " --ai '" + ai + "' --kata '" + kata + "' --workers " + workers + " --baseline '" + baseline_arg + "'" } }}
-    @{{gradlew}} -q :analysis:tabulate
+    @{{ if build == "" { gradle + " :runner:runBenchmark '-Pai=" + ai + "' '-Pkata=" + kata + "' -Pworkers=" + workers + " -Pminutes=" + minutes + " -Pthorough=" + thorough + " -Pheap=" + heap + " '-Pbaseline=" + baseline_arg + "'" } else { "java -Xmx" + heap + " -Dai.benchmark.build=" + builds / build + " -cp '" + builds / build / "lib/*' org.triplea.ai.benchmark.runner.BenchmarkMain --kata-dir " + justfile_directory() / "kata" + " --out " + out + " --ai '" + ai + "' --kata '" + kata + "' --workers " + workers + " --minutes " + minutes + " --thorough " + thorough + " --baseline '" + baseline_arg + "'" } }}
+    @{{gradle}} :analysis:tabulate
 
 # Freeze the runner and engine as built now, to play later with build=<name> (default: the commit)
-freeze name=`git -C ../triplea rev-parse --short HEAD`:
-    @{{gradlew}} -q :runner:freeze "-PbuildName={{name}}"
-    @printf 'git_sha=%s\ngit_describe=%s\ngit_dirty=%s\n' "$(git -C ../triplea rev-parse HEAD)" "$(git -C ../triplea describe --tags --always)" "$([ -z "$(git -C ../triplea status --porcelain --untracked-files=no)" ] && echo false || echo true)" > "{{builds / name}}/build.properties"
+freeze name=`git -C {{triplea}} rev-parse --short HEAD`:
+    @{{gradle}} :runner:freeze "-PbuildName={{name}}"
+    @printf 'git_sha=%s\ngit_describe=%s\ngit_dirty=%s\n' "$(git -C {{triplea}} rev-parse HEAD)" "$(git -C {{triplea}} describe --tags --always)" "$([ -z "$(git -C {{triplea}} status --porcelain --untracked-files=no)" ] && echo false || echo true)" > "{{builds / name}}/build.properties"
     @echo "FROZEN {{builds / name}}"
 
 # List the kata found and their limits
 list:
-    @{{gradlew}} -q :runner:listKata
+    @{{gradle}} :runner:listKata
 
 # Compare run folders' raw data; each run after the first is shown as a difference from it
 tabulate +dirs:
-    @{{gradlew}} -q :analysis:tabulate "-PrunDirs=$(realpath {{dirs}} | paste -sd,)"
+    @{{gradle}} :analysis:tabulate "-PrunDirs=$(realpath {{dirs}} | paste -sd,)"
 
 # Copy a run from build/ into results/baselines/<name>, without logs; refuses a dirty run
 keep run name:
@@ -46,4 +53,4 @@ keep run name:
 
 # Open a kata's start file (map XML or save) in the TripleA client
 open name:
-    @{{justfile_directory() / "../triplea/gradlew"}} -q -p ../triplea :game-headed:run --args="{{absolute_path("kata" / name)}}/$(grep -oE '(map|save): *[^ ,}#]+' kata/{{name}}/kata.yaml | head -1 | sed -E 's/^[a-z]+: *//')"
+    @{{triplea / "gradlew"}} -q -p {{triplea}} :game-headed:run --args="{{absolute_path("kata" / name)}}/$(grep -oE '(map|save): *[^ ,}#]+' kata/{{name}}/kata.yaml | head -1 | sed -E 's/^[a-z]+: *//')"

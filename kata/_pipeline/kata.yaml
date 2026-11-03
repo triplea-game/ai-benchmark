@@ -7,5 +7,4 @@ limits:
   rounds: 2
   min_games: 2
   max_games: 2
-  budget_minutes: 3
   game_timeout_minutes: 5

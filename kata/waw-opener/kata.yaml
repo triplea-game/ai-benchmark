@@ -1,4 +1,4 @@
-description: World at War opener, compared at the end of round 2
+description: World at War opener, compared at the end of round 1 (round 2 when thorough)
 start: {map: World_At_War.xml}
 seats: [Axis, Allies]
-limits: {rounds: 2, min_games: 10, max_games: 40, budget_minutes: 10}
+limits: {rounds: 1, thorough_rounds: 2, min_games: 10, max_games: 40}

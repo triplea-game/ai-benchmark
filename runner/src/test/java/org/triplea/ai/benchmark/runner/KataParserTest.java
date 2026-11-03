@@ -27,7 +27,7 @@ class KataParserTest {
     assertThat(kata.start())
         .isEqualTo(new Kata.Start(Kata.StartKind.MAP, KATA_DIR.resolve("game.xml")));
     assertThat(kata.referenceAi()).isEqualTo("Hard");
-    assertThat(kata.limits()).isEqualTo(new Kata.Limits(3, 2, 20, 20, 30, null));
+    assertThat(kata.limits()).isEqualTo(new Kata.Limits(3, 3, 2, 20, 30, null));
     assertThat(kata.detail()).isFalse();
     assertThat(kata.metrics()).containsExactly("tuv", "pus");
     assertThat(kata.primaryMetric()).isEqualTo("tuv");
@@ -128,7 +128,7 @@ class KataParserTest {
             start: {save: position.tsvg}
             seats: [Axis, Allies]
             reference_ai: Fast
-            limits: {rounds: 5, min_games: 4, max_games: 8, budget_minutes: 10, game_timeout_minutes: 2}
+            limits: {rounds: 5, thorough_rounds: 12, min_games: 4, max_games: 8, game_timeout_minutes: 2}
             primary_metric: pus
             metrics: [pus]
             props: {Low Luck: true, Bid: 9}
@@ -137,7 +137,7 @@ class KataParserTest {
     assertThat(kata.name()).isEqualTo("renamed");
     assertThat(kata.start().kind()).isEqualTo(Kata.StartKind.SAVE);
     assertThat(kata.seats()).containsExactly("Axis", "Allies");
-    assertThat(kata.limits()).isEqualTo(new Kata.Limits(5, 4, 8, 10, 2, null));
+    assertThat(kata.limits()).isEqualTo(new Kata.Limits(5, 12, 4, 8, 2, null));
     assertThat(kata.metrics()).containsExactly("pus");
     assertThat(kata.props()).isEqualTo(Map.of("Low Luck", "true", "Bid", "9"));
   }
@@ -229,6 +229,37 @@ class KataParserTest {
                     limits: {rounds: 3}
                     """))
         .hasMessageContaining("inside the kata folder");
+  }
+
+  @Test
+  void thoroughParserPlaysTheThoroughRoundCap() {
+    final KataParser thorough =
+        new KataParser(List.of("Hard", "Fast"), List.of("tuv", "pus"), true);
+
+    final Kata kata =
+        thorough.parse(
+            KATA_DIR,
+            """
+            start: {map: game.xml}
+            seats: [Axis]
+            limits: {rounds: 8, thorough_rounds: 30}
+            """);
+
+    assertThat(kata.limits().rounds()).isEqualTo(30);
+  }
+
+  @Test
+  void thoroughRoundsBelowRoundsIsAnError() {
+    assertThatThrownBy(
+            () ->
+                parser.parse(
+                    KATA_DIR,
+                    """
+                    start: {map: game.xml}
+                    seats: [Axis]
+                    limits: {rounds: 8, thorough_rounds: 5}
+                    """))
+        .hasMessageContaining("thorough_rounds");
   }
 
   @Test

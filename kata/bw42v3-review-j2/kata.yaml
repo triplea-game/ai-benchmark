@@ -1,5 +1,5 @@
 description: "Big World 1942 v3, reviewed self-play game, Japanese round 2 to the round's end; Japan's second turn: fleet grouping and exposure"
 start: {save: position.tsvg}
 seats: [Axis]
-limits: {rounds: 2, min_games: 10, max_games: 20, budget_minutes: 10}
+limits: {rounds: 2, min_games: 10, max_games: 20}
 detail: true

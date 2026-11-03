@@ -1,6 +1,6 @@
 description: WW2v3 1942 full game with the human Allies bid, the 1941 kata's later start
 start: {map: WW2v3-1942.xml}
 seats: [Axis, Allies]
-limits: {rounds: 30, min_games: 4, max_games: 20, budget_minutes: 20}
+limits: {rounds: 8, thorough_rounds: 30, min_games: 4, max_games: 20}
 props: {Projection of Power: false, Honorable Surrender: true}
 bid: WW2v3-1942.bid.json

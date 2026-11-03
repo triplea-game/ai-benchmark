@@ -14,7 +14,7 @@ val outRoot = rootProject.layout.projectDirectory.dir("build").asFile.absolutePa
 
 tasks.register<JavaExec>("runBenchmark") {
     group = "ai benchmark"
-    description = "Plays the matching kata and writes the raw data (-Pai=, -Pkata=, -Pheap=, -Pworkers=, -Pbaseline=)."
+    description = "Plays the matching kata and writes the raw data (-Pai=, -Pkata=, -Pheap=, -Pworkers=, -Pminutes=, -Pthorough=, -Pbaseline=)."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "org.triplea.ai.benchmark.runner.BenchmarkMain"
     workingDir = rootDir
@@ -25,7 +25,10 @@ tasks.register<JavaExec>("runBenchmark") {
         "--ai", providers.gradleProperty("ai").getOrElse("Hard Beta"),
         "--kata", providers.gradleProperty("kata").getOrElse("*"),
         "--workers", providers.gradleProperty("workers").getOrElse("0"),
+        "--minutes", providers.gradleProperty("minutes").getOrElse("20"),
+        "--thorough", providers.gradleProperty("thorough").getOrElse("false"),
         "--baseline", providers.gradleProperty("baseline").getOrElse(""),
+        "--triplea", providers.gradleProperty("triplea").getOrElse("../triplea"),
     )
 }
 

@@ -32,8 +32,10 @@ import org.triplea.ai.benchmark.metrics.Metrics;
  * analyses the data, or compares runs; the tabulator does.
  *
  * <p>Args: {@code --kata-dir <dir> (--list | --out <dir> --ai <name> --kata <glob> [--workers <n>]
- * [--baseline <run dir>])}; a baseline run lets {@link EarlyStop} end a kata early. {@link
- * WorkerPool} starts this same class with {@code --play} for each game.
+ * [--minutes <n>] [--thorough true] [--baseline <run dir>] [--triplea <dir>])}. No pair starts
+ * after {@code --minutes} (0: no deadline); {@code --thorough} plays each kata's {@code
+ * thorough_rounds}; a baseline run lets {@link EarlyStop} end a kata early. {@link WorkerPool}
+ * starts this same class with {@code --play} for each game.
  */
 public final class BenchmarkMain {
   /** System property naming the frozen build folder this JVM runs from, if any. */
@@ -45,7 +47,8 @@ public final class BenchmarkMain {
     final Map<String, String> opts = parseArgs(args);
     final KataCatalog catalog =
         new KataCatalog(
-            Path.of(require(opts, "kata-dir")), new KataParser(AiRegistry.names(), Metrics.ids()));
+            Path.of(require(opts, "kata-dir")),
+            new KataParser(AiRegistry.names(), Metrics.ids(), thorough(opts)));
     if (opts.containsKey("list")) {
       catalog.all().forEach(kata -> System.out.println(describe(kata)));
       return;
@@ -69,7 +72,7 @@ public final class BenchmarkMain {
     }
     final String baseline = opts.getOrDefault("baseline", "");
     final EarlyStop earlyStop = baseline.isEmpty() ? null : EarlyStop.against(Path.of(baseline));
-    final Map<String, Object> source = source();
+    final Map<String, Object> source = source(opts.getOrDefault("triplea", "../triplea"));
     final Path runDir = newRunDir(Path.of(require(opts, "out")), ai, source);
     final int requested = Integer.parseInt(opts.getOrDefault("workers", "0"));
     final int workers = requested > 0 ? requested : WorkerPool.defaultWorkers();
@@ -80,6 +83,9 @@ public final class BenchmarkMain {
     run.put("ai", ai);
     run.putAll(source);
     run.put("workers", workers);
+    final int minutes = Integer.parseInt(opts.getOrDefault("minutes", "20"));
+    run.put("minutes", minutes);
+    run.put("thorough", thorough(opts));
     run.put("java", System.getProperty("java.version"));
     run.put("cpus", Runtime.getRuntime().availableProcessors());
     run.put("started_at", Instant.now().toString());
@@ -97,7 +103,9 @@ public final class BenchmarkMain {
               workers,
               katas,
               new WorkerPool.Writers(snapshots, steps, games),
-              earlyStop)
+              earlyStop,
+              minutes == 0 ? null : Duration.ofMinutes(minutes),
+              thorough(opts))
           .run();
     } catch (final InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -321,26 +329,27 @@ public final class BenchmarkMain {
   private static String describe(final Kata kata) {
     final Kata.Limits l = kata.limits();
     return String.format(
-        "%-20s seats=%s reference=%s rounds=%d games=%d-%d budget=%dm  %s",
+        "%-20s seats=%s reference=%s rounds=%d (thorough %d) games=%d-%d  %s",
         kata.name(),
         kata.seats(),
         kata.referenceAi(),
         l.rounds(),
+        l.thoroughRounds(),
         l.minGames(),
         l.maxGames(),
-        l.budgetMinutes(),
         kata.description());
   }
 
   /** The build, commit and dirty flag the games run from: the frozen build's, else the tree's. */
-  private static Map<String, Object> source() throws IOException {
+  private static Map<String, Object> source(final String triplea) throws IOException {
     final Map<String, Object> source = new LinkedHashMap<>();
     final String build = System.getProperty(FROZEN_BUILD);
     if (build == null) {
       source.put("build", null);
-      source.put("git_sha", git("rev-parse", "HEAD"));
-      source.put("git_describe", git("describe", "--tags", "--always"));
-      source.put("git_dirty", !git("status", "--porcelain", "--untracked-files=no").isEmpty());
+      source.put("git_sha", gitIn(triplea, "rev-parse", "HEAD"));
+      source.put("git_describe", gitIn(triplea, "describe", "--tags", "--always"));
+      source.put(
+          "git_dirty", !gitIn(triplea, "status", "--porcelain", "--untracked-files=no").isEmpty());
       return withBenchmarkTree(source);
     }
     // The source tree may have moved on since the freeze; the build knows what it was made from.
@@ -393,11 +402,6 @@ public final class BenchmarkMain {
     return Math.round(nanos / 1e8) / 10.0;
   }
 
-  // The AI under test lives in the sibling triplea clone, so its commit is the one recorded.
-  private static String git(final String... args) {
-    return gitIn("../triplea", args);
-  }
-
   private static String gitIn(final String repo, final String... args) {
     final List<String> command = new ArrayList<>(List.of("git", "-C", repo));
     command.addAll(List.of(args));
@@ -411,6 +415,10 @@ public final class BenchmarkMain {
       Thread.currentThread().interrupt();
       return "unknown";
     }
+  }
+
+  private static boolean thorough(final Map<String, String> opts) {
+    return Boolean.parseBoolean(opts.getOrDefault("thorough", "false"));
   }
 
   private static String require(final Map<String, String> opts, final String key) {
