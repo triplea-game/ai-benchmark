@@ -5,6 +5,12 @@ plugins {
 subprojects {
     apply(plugin = "java-library")
 
+    // triplea's build logic looks for .build/pmd.xml in the root project, which here is this repo.
+    afterEvaluate {
+        extensions.findByType<PmdExtension>()?.ruleSetFiles =
+            files(rootProject.file((providers.gradleProperty("triplea").orNull ?: "../triplea") + "/.build/pmd.xml"))
+    }
+
     dependencies {
         implementation(rootProject.libs.jlayer) {
             exclude(group = "junit", module = "junit")
