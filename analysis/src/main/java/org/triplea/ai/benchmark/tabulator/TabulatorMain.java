@@ -10,8 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Compares run folders and writes {@code scorecard.json} and {@code scorecard.html}, then prints
- * the box scores. The first run is the reference; every other run is shown as a difference from it.
+ * Compares run folders and writes {@code scorecard.json} and {@code scorecard.html}, then prints a
+ * one-row-per-seat summary; the full box scores go to {@code scorecard.txt}. The first run is the
+ * reference; every other run is shown as a difference from it.
  *
  * <p>Args: one or more of {@code <run dir>} or a file holding a run dir's path (the runner's {@code
  * LATEST}). One run is written into its own folder; several go into a new {@code compare-<stamp>}
@@ -39,8 +40,10 @@ public final class TabulatorMain {
         out.resolve("scorecard.json"),
         new GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(card));
     Files.writeString(out.resolve("scorecard.html"), HtmlRenderer.render(card));
-    System.out.print(TerminalRenderer.render(card));
-    System.out.println("\nSCORECARD " + out.resolve("scorecard.html"));
+    Files.writeString(out.resolve("scorecard.txt"), TerminalRenderer.render(card));
+    System.out.print(TerminalRenderer.summary(card));
+    System.out.println("\nBOX SCORES " + out.resolve("scorecard.txt"));
+    System.out.println("SCORECARD " + out.resolve("scorecard.html"));
   }
 
   private static Path compareDir(final Path first) throws IOException {

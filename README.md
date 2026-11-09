@@ -28,7 +28,15 @@ just build=<name> run             # play a frozen build while the source tree ch
 just triplea=<dir> freeze [name]  # freeze from another triplea clone, eg a commit checked out apart
 just list                         # kata found and their limits
 just tabulate <run dir>...        # compare runs from raw data; others are diffs from the first
+just compare <rev>...             # freeze and play each triplea rev in turn, then tabulate them
+just compare main pr/15228        # a PR's head against main (pr/<n> fetches it from origin)
 ```
+
+`compare` clones each rev of `triplea` under `build/clones/<sha7>/` and freezes it as `<sha7>`,
+reusing either when it exists; the other overrides apply to every run. A rev before triplea #15225
+(0408bdc8a2) lacks the replay seams the runner needs, so `freeze` refuses it; cherry-pick #15225
+onto it to play it. Runs on one box take turns: `run` and `compare` hold `build/.run.lock` while
+playing, so a second one prints `WAITING` and starts when the first ends.
 
 AIs: `Hard`, `Hard Beta`, `Fast`, `Easy` (see `AiRegistry`). Kata whose folder
 starts with `_` are internal and only run when the glob starts with `_` too.
@@ -49,7 +57,9 @@ plays more, up to `max_games`. No pair starts after the run's deadline (`minutes
 kata's games look longer than the time left (`SKIP`: its finished games' average, or how long its
 oldest running game has run). A started pair is always finished, so a run ends a little past the
 deadline. A kata that didn't reach `min_games` prints `SHORT`. The CPU, not the worker count,
-bounds a run: each game's battle calculator already uses several cores.
+bounds a run: each game's battle calculator already uses several cores. Whatever else the box is
+running, no new game starts while free memory is under two workers' heaps or the load average is
+over 2 per core (`HOLD`); it starts once a running game ends and there's room.
 
 Each game runs in its own JVM, several at once; a game whose worker fails keeps its log under
 `parts/` in the run folder. Runs are compared in the same seat only; maps
@@ -224,8 +234,9 @@ The tabulator is its own module, `analysis/` (`:analysis`). It reads only the ra
 data files above and has no engine dependency, so any run folder, old or copied from another
 machine, can be re-tabulated after the analysis changes.
 
-`scorecard.json`, `scorecard.html` (self-contained), and the terminal box
-scores. Cells are the mean gap at each game's final snapshot with a 95%
+`scorecard.json`, `scorecard.html` (self-contained), and `scorecard.txt`, the box scores. The
+terminal shows a summary: one row per kata seat, the primary metric's gap in run 1 and each later
+run's difference from it. Cells are the mean gap at each game's final snapshot with a 95%
 Student-t CI; each run after the first gets a diff row, that run minus the
 first, with a Welch CI. One run is written into its own folder; several into a
 new `compare-<timestamp>` folder beside the first.
@@ -247,5 +258,5 @@ Runs written when the runner still played a control AI also hold `arm`
 ## Develop
 
 `./gradlew -Ptriplea=../triplea check` runs the tests and PMD (using triplea's `.build/pmd.xml`).
-`spotlessApply` needs `--no-configuration-cache`; with the cache on, it formats but then fails
-on `failedTestsService`.
+The configuration cache stays off: with it on, every build in this composite ends failing on
+triplea's `failedTestsService`.

@@ -9,30 +9,79 @@ import org.triplea.ai.benchmark.tabulator.Scorecard.Team;
 import org.triplea.ai.benchmark.tabulator.Stats.Difference;
 import org.triplea.ai.benchmark.tabulator.Stats.Summary;
 
-/** Plain-text box scores, one per kata seat. */
+/**
+ * Plain text: a summary, one row per kata seat on its primary metric, and the full box scores, one
+ * per kata seat.
+ */
 final class TerminalRenderer {
   private static final int LABEL = 30;
   private static final int RECORD = 17;
   private static final int SCORE = 14;
   private static final int CELL = 22;
   private static final int DETAIL_ROWS = 15;
+  private static final int KATA = 26;
+  private static final int SEAT = 9;
+  private static final int METRIC = 8;
+  private static final int SUMMARY_CELL = 26;
 
   private TerminalRenderer() {}
+
+  /**
+   * Per kata seat, the first run's mean final gap on the primary metric and each later run's
+   * difference from it.
+   */
+  static String summary(final Scorecard card) {
+    final StringBuilder out = new StringBuilder();
+    out.append("Summary (primary metric: run 1's mean final gap ±95% CI, later runs' difference")
+        .append(" from it; * CI excludes 0, @t first turn it does; n: games)\n");
+    runs(out, card);
+    out.append(pad("kata", KATA)).append(pad("seat", SEAT)).append(pad("metric", METRIC));
+    for (int i = 0; i < card.runs().size(); i++) {
+      out.append(pad(i == 0 ? "run 1" : "run " + (i + 1) + " - run 1", SUMMARY_CELL));
+    }
+    out.append('\n');
+    for (final Box box : card.series()) {
+      final String metric = box.primaryMetric();
+      out.append(pad(box.kata(), KATA)).append(pad(box.seat(), SEAT)).append(pad(metric, METRIC));
+      final Team first = box.teams().get(0);
+      out.append(pad(summary(first.cells().get(metric).gap()) + n(first), SUMMARY_CELL));
+      box.teams().stream()
+          .skip(1)
+          .forEach(
+              team ->
+                  out.append(
+                      pad(
+                          difference(team.difference().get(metric))
+                              + separation(team.separatesAt().get(metric))
+                              + n(team),
+                          SUMMARY_CELL)));
+      out.append('\n');
+    }
+    return out.toString();
+  }
 
   static String render(final Scorecard card) {
     final StringBuilder out = new StringBuilder();
     out.append("Scorecard (cells: mean final gap ±95% CI; diff rows are against run 1;")
         .append(" * CI excludes 0, @t first turn it does;")
         .append(" score: win 1, loss 0, else ½)\n");
+    runs(out, card);
+    for (final Box box : card.series()) {
+      out.append('\n').append(box(box));
+    }
+    return out.toString();
+  }
+
+  private static void runs(final StringBuilder out, final Scorecard card) {
     for (int i = 0; i < card.runs().size(); i++) {
       final Scorecard.RunInfo run = card.runs().get(i);
       out.append(String.format("  run %d: %s, started %s%n", i + 1, run.label(), run.startedAt()));
     }
     card.warnings().forEach(w -> out.append("  WARNING: ").append(w).append('\n'));
-    for (final Box box : card.series()) {
-      out.append('\n').append(box(box));
-    }
-    return out.toString();
+  }
+
+  private static String n(final Team team) {
+    return "  n=" + team.games();
   }
 
   private static String box(final Box box) {
