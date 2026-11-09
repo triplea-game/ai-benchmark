@@ -36,6 +36,12 @@ final class WorkerPool {
   /** A JVM's footprint beyond its heap, a rough guess. */
   private static final long JVM_OVERHEAD_MB = 512;
 
+  /**
+   * Above this load average per core, no new game starts. Each game's battle calculator already
+   * runs on several cores, so the pool's own games push the load past 1 per core.
+   */
+  private static final double LOAD_PER_CORE = 2.0;
+
   private final Path kataDir;
   private final Path runDir;
   private final String ai;
@@ -48,6 +54,7 @@ final class WorkerPool {
   private final Map<Process, Running> running = new ConcurrentHashMap<>();
   private long deadlineAt;
   private boolean deadlineReported;
+  private boolean holdReported;
 
   WorkerPool(
       final Path kataDir,
@@ -90,7 +97,7 @@ final class WorkerPool {
     Runtime.getRuntime().addShutdownHook(killWorkers);
     deadlineAt = deadline == null ? Long.MAX_VALUE : System.nanoTime() + deadline.toNanos();
     while (true) {
-      while (running.size() < workers) {
+      while (running.size() < workers && (running.isEmpty() || boxHasRoom())) {
         final Optional<Job> job = nextJob();
         if (job.isEmpty()) {
           break;
@@ -295,6 +302,40 @@ final class WorkerPool {
       }
     } catch (final IOException e) {
       throw new UncheckedIOException(e);
+    }
+  }
+
+  /**
+   * Whether another worker fits now, given whatever else the box runs: memory for its heap and one
+   * more (workers started moments ago haven't grown into theirs yet), and a load average under
+   * {@link #LOAD_PER_CORE} per core. Re-checked as workers finish, so a busy box holds new games
+   * back rather than oversubscribing it.
+   */
+  private boolean boxHasRoom() {
+    final long perWorkerMb = heapMb() + JVM_OVERHEAD_MB;
+    final Optional<Long> memory = memAvailableMb();
+    final Optional<Double> load = loadAverage();
+    final int cores = Runtime.getRuntime().availableProcessors();
+    final boolean room =
+        memory.map(mb -> mb - MEMORY_FLOOR_MB >= 2 * perWorkerMb).orElse(true)
+            && load.map(l -> l < LOAD_PER_CORE * cores).orElse(true);
+    if (!room && !holdReported) {
+      System.out.printf(
+          "HOLD %d game(s) running; no new game until one ends (%d MB free, load %.1f on %d"
+              + " cores)%n",
+          running.size(), memory.orElse(-1L), load.orElse(-1.0), cores);
+    }
+    holdReported = !room;
+    return room;
+  }
+
+  /** The 1-minute load average from {@code /proc/loadavg}; empty off Linux. */
+  private static Optional<Double> loadAverage() {
+    try {
+      return Optional.of(
+          Double.parseDouble(Files.readString(Path.of("/proc/loadavg")).split(" ")[0]));
+    } catch (final IOException | RuntimeException e) {
+      return Optional.empty();
     }
   }
 

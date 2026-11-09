@@ -1,0 +1,673 @@
+{
+  "schema": 1,
+  "ai": "Hard Beta",
+  "build": "main-c9458d7",
+  "git_sha": "c9458d7b11212baaf756b4972fa6af96703299d8",
+  "git_describe": "2026-11.16.15912",
+  "git_dirty": false,
+  "benchmark_sha": "9c09673b97eaec7eebc555627bdbda27b138d53a",
+  "benchmark_dirty": false,
+  "workers": 4,
+  "minutes": 20,
+  "thorough": false,
+  "java": "25.0.5",
+  "cpus": 32,
+  "started_at": "2026-11-09T00:39:40.454759302Z",
+  "ended_at": "2026-11-09T00:59:47.371980432Z",
+  "baseline": null,
+  "kata": [
+    {
+      "name": "axis-ascension-pre-ai",
+      "description": "Forum 4457 post 81082 - Allies Hard AI, British round 1 before combat move (lone transport into Borneo, undefended transports)",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 3,
+        "thorough_rounds": 3,
+        "min_games": 10,
+        "max_games": 10,
+        "game_timeout_minutes": 30,
+        "stop_after": "The_British_Empire"
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "bw42v3-opener",
+      "description": "Big World 1942 v3 opener with an Allies 24 calibration bid, compared at the end of round 2",
+      "start": {
+        "map": "Big_World_1942_v3rules.xml"
+      },
+      "seats": [
+        "Axis",
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 2,
+        "thorough_rounds": 2,
+        "min_games": 10,
+        "max_games": 40,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": false,
+      "bid": "Big_World_1942_v3rules.bid.json",
+      "scripts": []
+    },
+    {
+      "name": "bw42v3-review-g1",
+      "description": "Big World 1942 v3, reviewed self-play game, Germans round 1 to the round\u0027s end; Germany\u0027s opening: holding France and the Western Germany garrison",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Axis"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 1,
+        "thorough_rounds": 1,
+        "min_games": 10,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "bw42v3-review-j1",
+      "description": "Big World 1942 v3, reviewed self-play game, Japanese round 1 to the round\u0027s end; Japan\u0027s opening: the strike on the US fleet, fleet and transport exposure",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Axis"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 1,
+        "thorough_rounds": 1,
+        "min_games": 10,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "bw42v3-review-j2",
+      "description": "Big World 1942 v3, reviewed self-play game, Japanese round 2 to the round\u0027s end; Japan\u0027s second turn: fleet grouping and exposure",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Axis"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 2,
+        "thorough_rounds": 2,
+        "min_games": 10,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "bw42v3-review-j3",
+      "description": "Big World 1942 v3, reviewed self-play game, Japanese round 3 to the round\u0027s end; Japan\u0027s third turn: fleet grouping and exposure. Units more than 3 moves from any Japanese unit removed (Europe, Russia, most of the Allies).",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Axis"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 3,
+        "thorough_rounds": 3,
+        "min_games": 10,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "bw42v3-review-uk1",
+      "description": "Big World 1942 v3, reviewed self-play game, British round 1 to the round\u0027s end; the UK opening: the France trade and the sz17 transport",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 1,
+        "thorough_rounds": 1,
+        "min_games": 10,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "bw42v3-review-us1",
+      "description": "Big World 1942 v3, reviewed self-play game, Americans round 1 to the round\u0027s end; the US opening: fleet and transport exposure. Units more than 5 moves from the US Pacific fleet and home territories removed (Europe, Russia).",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 1,
+        "thorough_rounds": 1,
+        "min_games": 10,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "classic-r5-british",
+      "description": "Forum 4457 (VictoryFirst) - Classic round 5 British turn (passive, tanks idle in London)",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 5,
+        "thorough_rounds": 5,
+        "min_games": 1,
+        "max_games": 1,
+        "game_timeout_minutes": 30,
+        "stop_after": "British"
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "human-v3-1941-g3",
+      "description": "WW2v3 1941 human game (forum, Low Luck, NOs) from Germany\u0027s round 3, played to round 5",
+      "start": {
+        "map": "WW2v3-1941.xml",
+        "human": "position.jsonl@3@Germans"
+      },
+      "seats": [
+        "Axis",
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 5,
+        "thorough_rounds": 5,
+        "min_games": 4,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": false,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "lhtr",
+      "description": "LHTR full game, the main map of the Pro AI tuning runs",
+      "start": {
+        "map": "lhtr.xml"
+      },
+      "seats": [
+        "Axis",
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 8,
+        "thorough_rounds": 30,
+        "min_games": 4,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": false,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "oztea-r2-japan",
+      "description": "Forum 4457 (RogerCooper) - Oztea 41 round 2 Japan purchase (AI hoarded 39 PUs, later 6 bombers)",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Axis"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 2,
+        "thorough_rounds": 2,
+        "min_games": 1,
+        "max_games": 1,
+        "game_timeout_minutes": 30,
+        "stop_after": "Japanese"
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "oztea-r9-germans",
+      "description": "Forum 4457 (RogerCooper) - Oztea 41 round 9, Berlin lost to UK/US can-opener; Germans\u0027 turn start",
+      "start": {
+        "save": "position.tsvg"
+      },
+      "seats": [
+        "Axis"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 9,
+        "thorough_rounds": 9,
+        "min_games": 1,
+        "max_games": 1,
+        "game_timeout_minutes": 30,
+        "stop_after": "Germans"
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": true,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "waw-opener",
+      "description": "World at War opener, compared at the end of round 1 (round 2 when thorough)",
+      "start": {
+        "map": "World_At_War.xml"
+      },
+      "seats": [
+        "Axis",
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 1,
+        "thorough_rounds": 2,
+        "min_games": 10,
+        "max_games": 40,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {},
+      "detail": false,
+      "bid": null,
+      "scripts": []
+    },
+    {
+      "name": "ww2v3-1941",
+      "description": "WW2v3 1941 full game with the human Allies bid, co-equal with LHTR in the Pro AI tuning runs",
+      "start": {
+        "map": "WW2v3-1941.xml"
+      },
+      "seats": [
+        "Axis",
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 8,
+        "thorough_rounds": 30,
+        "min_games": 4,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {
+        "Honorable Surrender": "true",
+        "Projection of Power": "false"
+      },
+      "detail": false,
+      "bid": "WW2v3-1941.bid.json",
+      "scripts": []
+    },
+    {
+      "name": "ww2v3-1942",
+      "description": "WW2v3 1942 full game with the human Allies bid, the 1941 kata\u0027s later start",
+      "start": {
+        "map": "WW2v3-1942.xml"
+      },
+      "seats": [
+        "Axis",
+        "Allies"
+      ],
+      "reference_ai": "Hard",
+      "limits": {
+        "rounds": 8,
+        "thorough_rounds": 30,
+        "min_games": 4,
+        "max_games": 20,
+        "game_timeout_minutes": 30,
+        "stop_after": null
+      },
+      "primary_metric": "tuv",
+      "metrics": [
+        "tuv",
+        "income",
+        "pus",
+        "units",
+        "vc",
+        "exposure_air",
+        "exposure_land",
+        "capitals_threatened",
+        "transports_exposed",
+        "navy_exposed",
+        "bought_tuv",
+        "lost_tuv",
+        "captures",
+        "recaptured"
+      ],
+      "props": {
+        "Honorable Surrender": "true",
+        "Projection of Power": "false"
+      },
+      "detail": false,
+      "bid": "WW2v3-1942.bid.json",
+      "scripts": []
+    }
+  ]
+}
